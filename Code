@@ -1,26 +1,27 @@
 import numpy as np
 import numpy.random as rd
+import matplotlib.pyplot as plt
 from numpy import exp
+from matplotlib.pyplot import axis , plot , show
 
 #Programme qui renvoie la liste des voisins d'un point de la grille (i,j)
-def voisins(Grille,i,j):
-    n=len(Grille[1])
-    if i ==1:
-        if j==1 :
-            return [(1,2),(2,1)]
-        elif j==n:
-            return [(1,n-1),(2,n)]
-        return [(1,j-1),(1,j+1),(2,j)]
-    elif i==n:
-        if j==1 :
-            return [(n-1,1),(n,2)]
-        elif j==n:
-            return [(n,n-1),(n-1,n)]
-        return [(n,j-1),(1,j+1),(n-1,j)]
-    elif j==1 :
-        return [(i-1,1),(i+1,1),(i,2)]
-    elif j==n :
-        return [(i-1,n),(i+1,n),(i,n-1)]
+def voisins(n,i,j):
+    if i ==0:
+        if j==0 :
+            return [(0,1),(1,0)]
+        elif j==n-1:
+            return [(0,n-2),(1,n-1)]
+        return [(0,j-1),(0,j+1),(1,j)]
+    elif i==n-1:
+        if j==0 :
+            return [(n-2,0),(n-1,1)]
+        elif j==n-1:
+            return [(n-1,n-2),(n-2,n-1)]
+        return [(n-1,j-1),(n-1,j+1),(n-2,j)]
+    elif j==0 :
+        return [(i-1,0),(i+1,0),(i,1)]
+    elif j==n-1 :
+        return [(i-1,n-1),(i+1,n-1),(i,n-1)]
     else :
         return [(i+1,j),(i-1,j),(i,j-1),(i,j+1)]
 
@@ -32,58 +33,75 @@ def Short(A_0, Gamma, l, taille, Omega, Eta, dt, Theta):
     Bbar=(Gamma*Theta)/Omega
     nbar=(Gamma*dt)/(1-exp(-(A_0+Bbar)*dt))
 
-    Criminel=np.zeros((taille,taille))
+    Criminel=np.zeros((taille,taille),dtype=np.int32)
     nombre=int(nbar*taille**2)
     if nombre >1:
         alea=rd.randint(0,taille,2*nombre)
         for p in range(nombre):
-            Criminel[alea[2*p],alea[2*p+1]]+=1 #Matrice aléatoire d'entiers, de moyenne nbar. Matrice du nombre de criminels à chaque point
+            Criminel[alea[2*p],alea[2*p+1]]+=1
+    #Matrice aléatoire d'entiers, de moyenne nbar. Matrice du nombre de criminels à chaque point
 
     A=A_0*np.ones((taille,taille)) #Matrice des attractivités
     B=Bbar*np.ones((taille,taille)) #Matrice des attractivités dynamiques
-
     #Simulation
-    for t in range(int(730*dt)):
-        for s in Grille :
-            s=(i,j)
-            E=0 #Compteur du nombre de crime qui a lieu au point (i,j) au cours de l'intervalle de temps dt. L'intervalle de temps vient de commencer, donc aucun crime n'a encore été commis au noeud s pendant l'intervalle
-            rd.seed(t+i*j)
-            #Introduction d'un criminel avec la probabilité Gamma
-            r =rd.random()
-            if r<=Gamma:
-                Criminel[i,j]+=1
+    for t in range(730):
+        for i in range(taille) :
+            for j in range(taille):
+                E=0 #Compteur du nombre de crime qui a lieu au point (i,j) au cours de l'intervalle de temps dt. L'intervalle de temps vient de commencer, donc aucun crime n'a encore été commis au noeud s pendant l'intervalle
+                #Introduction d'un criminel avec la probabilité Gamma
+                r =rd.random()
+                if r<=Gamma:
+                    Criminel[i,j]+=1
 
-            #Début de la boucle criminelle
-            if Criminel[i,j]!=0: #S'il y a des criminels présents sur place
-                for l in Criminel[i,j]:
-                    p=1-exp(-A[i,j]*dt)
-                    v=rd.random()
-                    if v<=p: #Cas où la maison est effectivement cambriolée
-                        E+=1
-                    else :
-                        voisins=voisins(Grille,i,j)
-                        L=[]
-                        S=0
-                        for l in voisins:
-                            S+=A[l[0],l[1]]
-                        for k in voisins: #Définir voisins, et différencier coins/bords
-                            L.append(A[k[0],k[1]]/S)
-                        choix=rd.choice(voisins,1,p=L)[0]
-                        Criminel[choix[0],choix[1]]
-                            #Choisir avec la proba Q[s][k] de partir chez le voisin k, sachant qu'il est obligé de partir
-                        Criminel[i,j]-=1 #Dans les deux cas, le criminel sera parti
+                #Début de la boucle criminelle
+                if Criminel[i,j]!=0: #S'il y a des criminels présents sur place
+                    for q in range(Criminel[i,j]):
+                        p=1-exp(-A[i,j]*dt)
+                        v=rd.random()
+                        if v<=p: #Cas où la maison est effectivement cambriolée
+                            E+=1
+                        else :
+                            vois=voisins(taille,i,j)
+                            L=[]
+                            S=0
+                            somme=-1
+                            cho=[]
+                            for l in vois:
+                                S+=A[l[0],l[1]]
+                            for k in vois: #Définir voisins, et différencier coins/bords
+                                L.append(A[k[0],k[1]]/S)
+                                somme+=1
+                                cho.append(somme)
+                            choix=rd.choice(cho,1,p=L)[0]
+                            Criminel[vois[choix][0],vois[choix][1]]
+                                #Choisir avec la proba Q[s][k] de partir chez le voisin k, sachant qu'il est obligé de partir
+                            Criminel[i,j]-=1 #Dans les deux cas, le criminel sera parti
 
-            #Recalcul de B
-            D=B[i,j]*(1-Omega*dt)+Theta*E
-            if D>=0:
+                #Recalcul de B
+                D=B[i,j]*(1-Omega*dt)+Theta*E
                 B[i,j]=D
+                A[i,j]=A_0+B[i,j]
+                #Interface graphique
+        print(t)
+    print(B)
+    xbleu=[]
+    ybleu=[]
+    xvert=[]
+    yvert=[]
+    xrouge=[]
+    yrouge=[]
+    for m in range(taille):
+        for n in range(taille):
+            if B[m,n]<=Bbar:
+                xbleu.append(m)
+                ybleu.append(n)
+            elif Bbar<B[m,n]<2*Bbar:
+                xvert.append(m)
+                yvert.append(n)
             else :
-                B[i,j]=0
-
-    return B
-
-    #Interface graphique
-    for s in Grille :
-        s=(i,j)
-        if
-
+                xrouge.append(m)
+                yrouge.append(n)
+    plt.scatter(xbleu,ybleu,color='blue')
+    plt.scatter(xvert,yvert,color='green')
+    plt.scatter(xrouge,yrouge,color='red')
+    axis([0,128,0,128]) ; show()
