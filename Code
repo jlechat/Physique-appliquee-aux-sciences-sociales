@@ -31,29 +31,30 @@ def Short1(A_0, Gamma, l, taille, Omega, Eta, dt, Theta):
     Grille = [(i,j) for i in range(taille) for j in range(taille)]
     Bbar=(Gamma*Theta)/Omega
     nbar=(Gamma*dt)/(1-exp(-(A_0+Bbar)*dt))
-    
-    if int(nbar)<1:
-        nombre=int(nbar*taille**2)
-    Criminel=rd.randint(0, 2*int(nbar),(taille,taille)) #Matrice aléatoire d'entiers, de moyenne nbar. Matrice du nombre de criminels à chaque point
 
+    Criminel=np.zeros((taille,taille))
+    nombre=int(nbar*taille**2)
+    if nombre >1:
+        alea=rd.randint(0,taille,2*nombre)
+        for p in range(nombre):
+            Criminel[alea[2*p],alea[2*p+1]]+=1 #Matrice aléatoire d'entiers, de moyenne nbar. Matrice du nombre de criminels à chaque point
 
     A=A_0*np.ones((taille,taille)) #Matrice des attractivités
     B=Bbar*np.ones((taille,taille)) #Matrice des attractivités dynamiques
 
-
     #Simulation
-    for t in range(730*dt):
+    for t in range(int(730*dt)):
         for s in Grille :
             s=(i,j)
             E=0 #Compteur du nombre de crime qui a lieu au point (i,j) au cours de l'intervalle de temps dt. L'intervalle de temps vient de commencer, donc aucun crime n'a encore été commis au noeud s pendant l'intervalle
-            random.seed(t+i*j)
+            rd.seed(t+i*j)
             #Introduction d'un criminel avec la probabilité Gamma
-            r =random(0,1)
+            r =rd.random()
             if r<=Gamma:
                 Criminel[i,j]+=1
 
             #Début de la boucle criminelle
-            if Criminels[s]!=0: #S'il y a des criminels présents sur place
+            if Criminel[i,j]!=0: #S'il y a des criminels présents sur place
                 for l in Criminel[i,j]:
                     p=1-exp(-A[i,j]*dt)
                     v=rd.random()
@@ -73,11 +74,11 @@ def Short1(A_0, Gamma, l, taille, Omega, Eta, dt, Theta):
                         Criminel[i,j]-=1 #Dans les deux cas, le criminel sera parti
 
             #Recalcul de B
-            D=B[s](1-Omega*dt)+Theta*E
+            D=B[i,j]*(1-Omega*dt)+Theta*E
             if D>=0:
-                B[s]=D
+                B[i,j]=D
             else :
-                B[s]=0
+                B[i,j]=0
 
     return B
     #Partie graphique
@@ -89,5 +90,6 @@ def Short(A_0, Gamma, l, taille, Omega, Eta, dt, Theta):
     nbar=(Gamma*dt)/(1-exp(-(A_0+Bbar)*dt))
     return(Bbar,nbar)
 
+    #Interface graphique
 
 
