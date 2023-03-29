@@ -1,1 +1,1 @@
-# Physique-appliqu-ee-aux-sciences-sociales
+# Physique-appliquee-aux-sciences-sociales
