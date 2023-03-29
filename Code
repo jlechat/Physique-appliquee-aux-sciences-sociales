@@ -26,7 +26,7 @@ def voisins(Grille,i,j):
 
 #Attention ! Pour l'instant, vu comme c'est construit, un criminel peut se déplacer PLUSIEURS fois dans une même boucle ! Pour éviter ça, il faudrait instaurer un système de blâme dans la ville d'arrivée, qui serait à décompter du nombre de criminels dans la maison (et on réinitialiserait tous les compteurs à chaque début de session).
 
-def Short1(A_0, Gamma, l, taille, Omega, Eta, dt, Theta):
+def Short(A_0, Gamma, l, taille, Omega, Eta, dt, Theta):
     #Formation de la grille et des matrices importantes
     Grille = [(i,j) for i in range(taille) for j in range(taille)]
     Bbar=(Gamma*Theta)/Omega
@@ -81,15 +81,9 @@ def Short1(A_0, Gamma, l, taille, Omega, Eta, dt, Theta):
                 B[i,j]=0
 
     return B
-    #Partie graphique
-
-def Short(A_0, Gamma, l, taille, Omega, Eta, dt, Theta):
-    #Formation de la grille et des matrices importantes
-    Grille = [(i,j) for i in range(taille) for j in range(taille)]
-    Bbar=(Gamma*Theta)/Omega
-    nbar=(Gamma*dt)/(1-exp(-(A_0+Bbar)*dt))
-    return(Bbar,nbar)
 
     #Interface graphique
-
+    for s in Grille :
+        s=(i,j)
+        if
 
