@@ -33,7 +33,21 @@ def voisins(n,i,j):
         return [(i+1,j),(i-1,j),(i,j-1),(i,j+1)]
 
 ###Paramètres et les valeurs prises dans l'article
+#Situation a :
+    #Gamma = 0.019 ; Eta = 0.2 ; Theta = 0.56
+    #Short(1/30,0.019,1,128,1/15,0.2,1/100,0.56)
 
+#Situation b :
+    #Gamma = 0.002 ; Eta = 0.2 ; Theta = 5.6
+    #Short(1/30,0.002,1,128,1/15,0.2,1/100,5.6)
+
+#Situation c :
+    #Gamma = 0.019 ; Eta = 0.03 ; Theta = 0.56
+    #Short(1/30,0.019,1,128,1/15,0.03,1/100,0.56)
+
+#Situation d :
+    #Gamma = 0.002 ; Eta = 0.03 ; Theta = 5.6
+    #Short(1/30,0.002,1,128,1/15,0.03,1/100,5.6)
 
 ###Modèle de l'article
 #Une seule grande fonction qui prend en entrée les paramètres, et ressort la carte du crime après 730 itérations
