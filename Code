@@ -32,8 +32,6 @@ def voisins(n,i,j):
     else :
         return [(i+1,j),(i-1,j),(i,j-1),(i,j+1)]
 
-#Attention ! Pour l'instant, vu comme c'est construit, un criminel peut se déplacer PLUSIEURS fois dans une même boucle ! Pour éviter ça, il faudrait instaurer un système de blâme dans la ville d'arrivée, qui serait à décompter du nombre de criminels dans la maison (et on réinitialiserait tous les compteurs à chaque début de session).
-
 ###Paramètres et les valeurs prises dans l'article
 
 
@@ -63,6 +61,9 @@ def Short(A_0, Gamma, l, taille, Omega, Eta, dt, Theta):
 
     ##Simulation
     for t in range(730):
+        #Blame : Matrice qui permet simplement de ne pas compter deux fois un criminel au cours d'une période dt, sachant qu'il peut avoir bougé
+        Blame=np.zeros((taille,taille),dtype=np.int32)
+
         for i in range(taille) :
             for j in range(taille):
                 #E : Compteur du nombre de crime qui a lieu au point (i,j) au cours de l'intervalle de temps dt. L'intervalle de temps vient de commencer, donc aucun crime n'a encore été commis au noeud s pendant l'intervalle
@@ -74,10 +75,12 @@ def Short(A_0, Gamma, l, taille, Omega, Eta, dt, Theta):
                     Criminel[i,j]+=1
 
                 ##Début de la boucle criminelle
+                #Criminels_actifs : Donne le nombre de criminels sur place, en enlevant les criminels déjà comptés dans ce tour
+                Criminels_actifs=Criminel[i,j]-Blame[i,j]
                 #Cas où il y a des criminels présents sur place
-                if Criminel[i,j]!=0:
+                if Criminels_actifs>0:
                     #Une action par criminel présent sur place
-                    for q in range(Criminel[i,j]):
+                    for q in range(Criminels_actifs):
                         #Cambriolage avec une probabilité p
                         p=1-exp(-A[i,j]*dt)
                         v=rd.random()
@@ -111,6 +114,8 @@ def Short(A_0, Gamma, l, taille, Omega, Eta, dt, Theta):
                             choix=rd.choice(cho,1,p=L)[0]
                             #On ajoute un criminel dans la maison d'arrivée
                             Criminel[vois[choix][0],vois[choix][1]]+=1
+                            #On retient que ce criminel a déjà été compté pendant cette période, et donc qu'en passant au voisin il ne faudra pas le recompter à nouveau
+                            Blame[vois[choix][0],vois[choix][1]]+=1
 
                         #Dans les deux cas (cambriolage ou non), le criminel sera parti
                         Criminel[i,j]-=1
